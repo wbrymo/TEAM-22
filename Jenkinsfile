@@ -11,7 +11,8 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    sudo yum install -y epel-release
+                    if [ -f /etc/redhat-release ]; then
+                    sudo yum install -y epel-release || echo "epel-release not found, continuing..."
                     sudo yum install -y httpd mariadb-server php php-mysqlnd
                     sudo systemctl enable --now httpd
                     sudo systemctl enable --now mariadb
