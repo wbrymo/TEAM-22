@@ -54,11 +54,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ PHP CRUD App successfully deployed and database initialized!'
-            echo '🌐 Visit your app at: http://34.224.100.106'
+            echo 'PHP CRUD App successfully deployed and database initialized!'
+            echo 'Visit your app at: http://34.224.100.106'
         }
         failure {
-            echo '❌ Deployment failed. Check Jenkins logs.'
+            echo 'Deployment failed. Check Jenkins logs.'
         }
     }
 }
