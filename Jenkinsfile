@@ -24,7 +24,7 @@ pipeline {
         stage('Deploy PHP App') {
             steps {
                 sh '''
-                    sudo cp proj-4-php_crud_app/index.php /var/www/html/
+                    sudo cp index.php /var/www/html/
                     sudo chown apache:apache /var/www/html/index.php
                     sudo chmod 644 /var/www/html/index.php
                 '''
@@ -34,7 +34,7 @@ pipeline {
         stage('Import Database') {
             steps {
                 sh '''
-                    sudo mysql -u root -ppassword < proj-4-php_crud_app/init.sql
+                    sudo mysql -u root -ppassword < init.sql
                 '''
             }
         }
