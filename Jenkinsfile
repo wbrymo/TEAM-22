@@ -44,11 +44,18 @@ pipeline {
                 sh 'sudo systemctl restart httpd'
             }
         }
+
+        stage('Test Deployed App') {
+            steps {
+                sh 'curl -I http://34.224.100.106'
+            }
+        }
     }
 
     post {
         success {
             echo '✅ PHP CRUD App successfully deployed and database initialized!'
+            echo '🌐 Visit your app at: http://34.224.100.106'
         }
         failure {
             echo '❌ Deployment failed. Check Jenkins logs.'
