@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        // Optional: define default Sonar token here if not set in Jenkins credentials
+        // SONAR_TOKEN = credentials('sonar-token-id') // if using Jenkins credentials store
+    }
+
     stages {
         stage('Clone Repo') {
             steps {
@@ -42,6 +47,20 @@ pipeline {
         stage('Restart Apache') {
             steps {
                 sh 'sudo systemctl restart httpd'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=squ_e69afcf7bc0e13fb0228920ac19fb77bb5800de5 \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://<SONARQUBE_IP>:9000 \
+                          -Dsonar.login=<YOUR_TOKEN>
+                    '''
+                }
             }
         }
 
