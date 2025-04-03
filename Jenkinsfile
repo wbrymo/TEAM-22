@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Optional: define default Sonar token here if not set in Jenkins credentials
-        // SONAR_TOKEN = credentials('squ_e69afcf7bc0e13fb0228920ac19fb77bb5800de5') // if using Jenkins credentials store
+        SONAR_TOKEN = credentials('squ_e69afcf7bc0e13fb0228920ac19fb77bb5800de5') // Replace with your Jenkins credential ID for SonarQube token
     }
 
     stages {
@@ -57,7 +56,7 @@ pipeline {
                         sonar-scanner \
                           -Dsonar.projectKey=Sonar \
                           -Dsonar.sources=. \
-                          -Dsonar.host.url=http://http://52.23.161.172:9000 \
+                          -Dsonar.host.url=http://52.23.161.172:9000 \
                           -Dsonar.login=$SONAR_TOKEN
                     '''
                 }
@@ -73,11 +72,11 @@ pipeline {
 
     post {
         success {
-            echo 'PHP CRUD App successfully deployed and database initialized!'
-            echo 'Visit your app at: http://34.224.100.106'
+            echo '✅ PHP CRUD App successfully deployed and database initialized!'
+            echo '🌐 Visit your app at: http://34.224.100.106'
         }
         failure {
-            echo 'Deployment failed. Check Jenkins logs.'
+            echo '❌ Deployment failed. Check Jenkins logs.'
         }
     }
 }
