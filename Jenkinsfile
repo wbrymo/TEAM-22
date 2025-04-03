@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_TOKEN = credentials('SONAR_TOKEN') // Replace with your Jenkins credential ID for SonarQube token
-    }
-
     stages {
         stage('Clone Repo') {
             steps {
@@ -49,20 +45,6 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=Sonar \
-                          -Dsonar.sources=. \
-                          -Dsonar.host.url=http://52.23.161.172:9000 \
-                          -Dsonar.login=$SONAR_TOKEN
-                    '''
-                }
-            }
-        }
-
         stage('Test Deployed App') {
             steps {
                 sh 'curl -I http://34.227.46.140'
@@ -72,11 +54,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ PHP CRUD App successfully deployed and database initialized!'
-            echo '🌐 Visit your app at: http://34.224.100.106'
+            echo 'PHP CRUD App successfully deployed and database initialized!'
+            echo 'Visit your app at: http://34.224.100.106'
         }
         failure {
-            echo '❌ Deployment failed. Check Jenkins logs.'
+            echo 'Deployment failed. Check Jenkins logs.'
         }
     }
 }
