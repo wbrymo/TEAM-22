@@ -2,8 +2,8 @@
 CREATE DATABASE IF NOT EXISTS studentdb;
 
 -- Create devops user for both local and remote access
-CREATE USER IF NOT EXISTS 'devops'@'localhost' IDENTIFIED BY 'devops123';
-CREATE USER IF NOT EXISTS 'devops'@'%' IDENTIFIED BY 'devops123';
+CREATE USER IF NOT EXISTS 'devops'@'localhost' IDENTIFIED BY 'password';
+CREATE USER IF NOT EXISTS 'devops'@'%' IDENTIFIED BY 'password';
 
 -- Grant privileges to the user for both local and remote access
 GRANT ALL PRIVILEGES ON studentdb.* TO 'devops'@'localhost';
