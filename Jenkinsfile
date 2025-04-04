@@ -89,10 +89,15 @@ pipeline {
             }
         }
 
-        // ✅ Replaced Credentials block with hardcoded devops login
         stage('Import DB (No Credentials)') {
+            when {
+                expression {
+                    return sh(script: "id devops > /dev/null 2>&1", returnStatus: true) == 0
+                }
+            }
             steps {
                 sh '''
+                    echo "✅ devops user exists. Importing DB..."
                     sudo mysql -u devops -ppassword < init.sql
                 '''
             }
