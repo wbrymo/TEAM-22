@@ -57,14 +57,16 @@ pipeline {
             }
         }
 
+        // ✅ UPDATED STAGING DEPLOYMENT
         stage('Deploy to Staging') {
             steps {
-                sshagent(['ssh-key-id']) {
-                    sh """
-                        scp index.php init.sql ubuntu@$STAGING_IP:/var/www/html/
-                        ssh ubuntu@$STAGING_IP 'sudo mysql -u devops -pBuraimoh7 < /var/www/html/init.sql'
-                        ssh ubuntu@$STAGING_IP 'sudo systemctl restart apache2'
-                    """
+                sshagent(['ubuntu']) {
+                    sh '''
+                        scp index.php init.sql ubuntu@54.196.165.194:~
+                        ssh ubuntu@54.196.165.194 "sudo mv ~/index.php ~/init.sql /var/www/html/"
+                        ssh ubuntu@54.196.165.194 "sudo mysql -u devops -pBuraimoh7 < /var/www/html/init.sql"
+                        ssh ubuntu@54.196.165.194 "sudo systemctl restart apache2"
+                    '''
                 }
             }
         }
