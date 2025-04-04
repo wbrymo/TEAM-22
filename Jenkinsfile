@@ -20,8 +20,14 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube Server') {
-                    sh 'sonar-scanner -Dsonar.projectKey=TEAM-22 -Dsonar.sources=. -Dsonar.host.url=http://54.196.165.194:9000 -Dsonar.login=$SONAR_TOKEN'
+                withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=TEAM-22 \
+                          -Dsonar.sources=. \
+                          -Dsonar.host.url=http://54.196.165.194:9000 \
+                          -Dsonar.login=$SONAR_TOKEN
+                    '''
                 }
             }
         }
