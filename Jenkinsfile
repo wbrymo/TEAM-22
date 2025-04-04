@@ -47,7 +47,7 @@ pipeline {
 
         stage('Test Deployed App') {
             steps {
-                sh 'curl -I http://34.227.46.140'
+                sh 'curl -I http://13.218.233.204'
             }
         }
     }
