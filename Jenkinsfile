@@ -57,14 +57,14 @@ pipeline {
             }
         }
 
-        // ✅ UPDATED STAGING DEPLOYMENT
+        // ✅ UPDATED STAGING DEPLOYMENT with ROOT user
         stage('Deploy to Staging') {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
                         scp index.php init.sql ubuntu@54.196.165.194:~
                         ssh ubuntu@54.196.165.194 "sudo mv ~/index.php ~/init.sql /var/www/html/"
-                        ssh ubuntu@54.196.165.194 "sudo mysql -u devops -pBuraimoh7 < /var/www/html/init.sql"
+                        ssh ubuntu@54.196.165.194 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
                         ssh ubuntu@54.196.165.194 "sudo systemctl restart apache2"
                     '''
                 }
