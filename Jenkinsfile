@@ -74,17 +74,21 @@ pipeline {
             }
         }
 
-        // ✅ New conditional deployment to production
+        // ✅ Updated: Safe and permission-proof production deployment
         stage('Deploy to Production') {
             when {
                 expression { params.PROMOTE_TO_PRODUCTION }
             }
             steps {
                 sshagent(['ubuntu']) {
-                    sh """
-                        scp index.php ubuntu@$PROD_IP:/var/www/html/
-                        ssh ubuntu@$PROD_IP 'sudo systemctl restart apache2'
-                    """
+                    sh '''
+                        scp index.php init.sql ubuntu@$PROD_IP:~
+                        ssh ubuntu@$PROD_IP '
+                            sudo mv ~/index.php ~/init.sql /var/www/html/ &&
+                            sudo mysql -u root -ppassword < /var/www/html/init.sql &&
+                            sudo systemctl restart apache2
+                        '
+                    '''
                 }
             }
         }
