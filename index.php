@@ -2,9 +2,13 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// ✅ Updated DB credentials
-$conn = new mysqli("localhost", "devops", "password", "studentdb");
+// DB connection
+$host = 'localhost';
+$user = 'devops';
+$pass = 'password';
+$db = 'studentdb';
 
+$conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
@@ -33,16 +37,14 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// Handle Insert or Update
+// Handle Insert/Update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $conn->real_escape_string($_POST['name']);
     $email = $conn->real_escape_string($_POST['email']);
-    if (isset($_POST['id']) && $_POST['id']) {
-        // Update
+    if (!empty($_POST['id'])) {
         $id = intval($_POST['id']);
         $conn->query("UPDATE students SET name='$name', email='$email' WHERE id=$id");
     } else {
-        // Create
         $conn->query("INSERT INTO students (name, email) VALUES ('$name', '$email')");
     }
     header("Location: index.php");
@@ -91,6 +93,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </table>
 </body>
 </html>
-
-<br>
-CeeyIT!
