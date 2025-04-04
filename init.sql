@@ -1,19 +1,19 @@
--- Create the database and user
+-- Create the database
 CREATE DATABASE IF NOT EXISTS studentdb;
 
--- Create devops user for both local and remote access
+-- Create the user for local and remote (optional)
 CREATE USER IF NOT EXISTS 'devops'@'localhost' IDENTIFIED BY 'password';
 CREATE USER IF NOT EXISTS 'devops'@'%' IDENTIFIED BY 'password';
 
--- Grant privileges to the user for both local and remote access
+-- Grant full privileges
 GRANT ALL PRIVILEGES ON studentdb.* TO 'devops'@'localhost';
 GRANT ALL PRIVILEGES ON studentdb.* TO 'devops'@'%';
 FLUSH PRIVILEGES;
 
--- Use the database
+-- Use the DB
 USE studentdb;
 
--- Create table and insert data
+-- Create table and sample data
 CREATE TABLE IF NOT EXISTS students (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100),
