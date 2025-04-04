@@ -79,6 +79,7 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
+                        ssh-keyscan -H 18.208.127.21 >> ~/.ssh/known_hosts
                         scp index.php init.sql ubuntu@18.208.127.21:~
                         ssh ubuntu@18.208.127.21 "sudo mv ~/index.php ~/init.sql /var/www/html/"
                         ssh ubuntu@18.208.127.21 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
