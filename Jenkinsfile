@@ -80,7 +80,7 @@ pipeline {
                 expression { params.PROMOTE_TO_PRODUCTION }
             }
             steps {
-                sshagent(['ssh-key-id']) {
+                sshagent([''ubuntu'']) {
                     sh """
                         scp index.php ubuntu@$PROD_IP:/var/www/html/
                         ssh ubuntu@$PROD_IP 'sudo systemctl restart apache2'
