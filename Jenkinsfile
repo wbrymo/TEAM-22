@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        STAGING_IP = '54.196.165.194'
+        PROD_IP = '18.208.127.21'
+        DEPLOYMENT_IP = '54.196.165.194'
+    }
+
     stages {
         stage('Clone Repo') {
             steps {
@@ -31,7 +37,7 @@ pipeline {
             }
         }
 
-        stage('Import Database') {
+        stage('Import Database (Local)') {
             steps {
                 sh '''
                     sudo mysql -u root -ppassword < init.sql
@@ -47,18 +53,57 @@ pipeline {
 
         stage('Test Deployed App') {
             steps {
-                sh 'curl -I http://54.196.165.194'
+                sh "curl -I http://$DEPLOYMENT_IP"
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                sshagent(['ssh-key-id']) {
+                    sh """
+                        scp index.php init.sql ubuntu@$STAGING_IP:/var/www/html/
+                        ssh ubuntu@$STAGING_IP 'sudo mysql -u devops -pBuraimoh7 < /var/www/html/init.sql'
+                        ssh ubuntu@$STAGING_IP 'sudo systemctl restart apache2'
+                    """
+                }
+            }
+        }
+
+        stage('Manual Approval') {
+            steps {
+                input message: 'Promote to Production?', ok: 'Deploy'
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                sshagent(['ssh-key-id']) {
+                    sh """
+                        scp index.php ubuntu@$PROD_IP:/var/www/html/
+                        ssh ubuntu@$PROD_IP 'sudo systemctl restart apache2'
+                    """
+                }
+            }
+        }
+
+        stage('Optional: Import DB via Jenkins Credentials') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'mysql-creds', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
+                    sh '''
+                        mysql -u "$DB_USER" -p"$DB_PASS" studentdb < init.sql
+                    '''
+                }
             }
         }
     }
 
     post {
         success {
-            echo 'PHP CRUD App successfully deployed and database initialized!'
-            echo 'Visit your app at: http://54.196.165.194'
+            echo '✅ PHP CRUD App deployed successfully to staging and/or production!'
+            echo "Visit app at: http://$DEPLOYMENT_IP"
         }
         failure {
-            echo 'Deployment failed. Check Jenkins logs.'
+            echo '❌ Deployment failed. Please check Jenkins logs for details.'
         }
     }
 }
