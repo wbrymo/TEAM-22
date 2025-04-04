@@ -2,12 +2,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$host = 'localhost';
-$user = 'devops';
-$pass = 'password';
-$db = 'studentdb';
+// ✅ Updated DB credentials
+$conn = new mysqli("localhost", "devops", "password", "studentdb");
 
-$conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
