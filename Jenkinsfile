@@ -92,7 +92,9 @@ pipeline {
         stage('Optional: Import DB via Jenkins Credentials') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mysql-creds', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-                    sh 'mysql -u "$DB_USER" -p"$DB_PASS" studentdb < init.sql'
+                    sh '''
+                        sudo mysql -u "$DB_USER" -p"$DB_PASS" < init.sql
+                    '''
                 }
             }
         }
