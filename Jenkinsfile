@@ -89,13 +89,12 @@ pipeline {
             }
         }
 
-        stage('Optional: Import DB via Jenkins Credentials') {
+        // ✅ Replaced Credentials block with hardcoded devops login
+        stage('Import DB (No Credentials)') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'mysql-creds', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-                    sh '''
-                        sudo mysql -u "$DB_USER" -p"$DB_PASS" < init.sql
-                    '''
-                }
+                sh '''
+                    sudo mysql -u devops -ppassword < init.sql
+                '''
             }
         }
     }
