@@ -55,7 +55,7 @@ pipeline {
     post {
         success {
             echo 'PHP CRUD App successfully deployed and database initialized!'
-            echo 'Visit your app at: http://34.224.100.106'
+            echo 'Visit your app at: http://54.196.165.194'
         }
         failure {
             echo 'Deployment failed. Check Jenkins logs.'
