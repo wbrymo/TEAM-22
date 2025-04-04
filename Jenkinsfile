@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'PROMOTE_TO_PRODUCTION', defaultValue: false, description: 'Promote to production?')
+    }
+
     environment {
         STAGING_IP = '54.196.165.194'
         PROD_IP = '18.208.127.21'
@@ -57,7 +61,6 @@ pipeline {
             }
         }
 
-        // ✅ UPDATED STAGING DEPLOYMENT with ROOT user
         stage('Deploy to Staging') {
             steps {
                 sshagent(['ubuntu']) {
@@ -71,13 +74,11 @@ pipeline {
             }
         }
 
-        stage('Manual Approval') {
-            steps {
-                input message: 'Promote to Production?', ok: 'Deploy'
-            }
-        }
-
+        // ✅ New conditional deployment to production
         stage('Deploy to Production') {
+            when {
+                expression { params.PROMOTE_TO_PRODUCTION }
+            }
             steps {
                 sshagent(['ssh-key-id']) {
                     sh """
