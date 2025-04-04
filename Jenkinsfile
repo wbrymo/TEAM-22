@@ -43,9 +43,7 @@ pipeline {
 
         stage('Import Database (Local)') {
             steps {
-                sh '''
-                    sudo mysql -u root -ppassword < init.sql
-                '''
+                sh 'sudo mysql -u root -ppassword < init.sql'
             }
         }
 
@@ -74,7 +72,6 @@ pipeline {
             }
         }
 
-        // ✅ Updated: Safe and permission-proof production deployment
         stage('Deploy to Production') {
             when {
                 expression { params.PROMOTE_TO_PRODUCTION }
@@ -82,12 +79,10 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
-                        scp index.php init.sql ubuntu@$PROD_IP:~
-                        ssh ubuntu@$PROD_IP '
-                            sudo mv ~/index.php ~/init.sql /var/www/html/ &&
-                            sudo mysql -u root -ppassword < /var/www/html/init.sql &&
-                            sudo systemctl restart apache2
-                        '
+                        scp index.php init.sql ubuntu@18.208.127.21:~
+                        ssh ubuntu@18.208.127.21 "sudo mv ~/index.php ~/init.sql /var/www/html/"
+                        ssh ubuntu@18.208.127.21 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
+                        ssh ubuntu@18.208.127.21 "sudo systemctl restart apache2"
                     '''
                 }
             }
@@ -96,9 +91,7 @@ pipeline {
         stage('Optional: Import DB via Jenkins Credentials') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'mysql-creds', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')]) {
-                    sh '''
-                        mysql -u "$DB_USER" -p"$DB_PASS" studentdb < init.sql
-                    '''
+                    sh 'mysql -u "$DB_USER" -p"$DB_PASS" studentdb < init.sql'
                 }
             }
         }
