@@ -18,6 +18,14 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube Server') {
+                    sh 'sonar-scanner -Dsonar.projectKey=TEAM-22 -Dsonar.sources=. -Dsonar.host.url=http://54.196.165.194:9000 -Dsonar.login=$SONAR_TOKEN'
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -63,7 +71,7 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
-                        scp index.php init.sql ubuntu@54.196.165.194:~
+                        scp index.php init.sql ubuntu@54.196.165.194:~ 
                         ssh ubuntu@54.196.165.194 "sudo mv ~/index.php ~/init.sql /var/www/html/"
                         ssh ubuntu@54.196.165.194 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
                         ssh ubuntu@54.196.165.194 "sudo systemctl restart apache2"
@@ -80,7 +88,7 @@ pipeline {
                 sshagent(['ubuntu']) {
                     sh '''
                         ssh-keyscan -H 18.208.127.21 >> ~/.ssh/known_hosts
-                        scp index.php init.sql ubuntu@18.208.127.21:~
+                        scp index.php init.sql ubuntu@18.208.127.21:~ 
                         ssh ubuntu@18.208.127.21 "sudo mv ~/index.php ~/init.sql /var/www/html/"
                         ssh ubuntu@18.208.127.21 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
                         ssh ubuntu@18.208.127.21 "sudo systemctl restart apache2"
