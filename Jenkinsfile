@@ -112,7 +112,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo "✅ devops user exists. Importing DB..."
+                    echo "devops user exists. Importing DB..."
                     sudo mysql -u devops -ppassword < init.sql
                 '''
             }
@@ -121,11 +121,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ PHP CRUD App deployed successfully to staging and/or production!'
+            echo 'PHP CRUD App deployed successfully to staging and/or production!'
             echo "Visit app at: http://$DEPLOYMENT_IP"
         }
         failure {
-            echo '❌ Deployment failed. Please check Jenkins logs for details.'
+            echo 'Deployment failed. Please check Jenkins logs for details.'
         }
     }
 }
