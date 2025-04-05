@@ -3,12 +3,14 @@ pipeline {
 
     parameters {
         booleanParam(name: 'PROMOTE_TO_PRODUCTION', defaultValue: false, description: 'Promote to production?')
+        string(name: 'ARTIFACT_VERSION', defaultValue: 'latest', description: 'Enter version to deploy (e.g., 12 or "latest")')
     }
 
     environment {
         STAGING_IP = '54.221.67.162'
         PROD_IP = '34.239.133.252'
         DEPLOYMENT_IP = '54.221.67.162'
+        NEXUS_URL = 'http://54.242.144.3:8081/repository/team22-artifacts'
     }
 
     stages {
@@ -37,7 +39,7 @@ pipeline {
                 sh '''
                     if [ -f /etc/redhat-release ]; then
                         sudo yum install -y epel-release || echo "epel-release not found, continuing..."
-                        sudo yum install -y httpd mariadb-server php php-mysqlnd
+                        sudo yum install -y httpd mariadb-server php php-mysqlnd zip unzip
                         sudo systemctl enable --now httpd
                         sudo systemctl enable --now mariadb
                     fi
@@ -45,10 +47,47 @@ pipeline {
             }
         }
 
+        stage('Package Artifact') {
+            steps {
+                sh '''
+                    mkdir -p artifacts
+                    cp index.php init.sql artifacts/
+                    zip -r team22-artifact-${BUILD_NUMBER}.zip artifacts
+                '''
+            }
+        }
+
+        stage('Upload Artifact to Nexus') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus-creds', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    sh '''
+                        curl -v -u $NEXUS_USER:$NEXUS_PASS \
+                          --upload-file team22-artifact-${BUILD_NUMBER}.zip \
+                          $NEXUS_URL/team22-artifact-${BUILD_NUMBER}.zip
+                    '''
+                }
+            }
+        }
+
+        stage('Download Artifact from Nexus') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'nexus-creds', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                    script {
+                        def version = (params.ARTIFACT_VERSION == 'latest') ? "${BUILD_NUMBER}" : params.ARTIFACT_VERSION
+                        def fileName = "team22-artifact-${version}.zip"
+                        sh """
+                            curl -u $NEXUS_USER:$NEXUS_PASS -O $NEXUS_URL/${fileName}
+                            unzip -o ${fileName}
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Deploy PHP App') {
             steps {
                 sh '''
-                    sudo cp index.php /var/www/html/
+                    sudo cp artifacts/index.php /var/www/html/
                     sudo chown apache:apache /var/www/html/index.php
                     sudo chmod 644 /var/www/html/index.php
                 '''
@@ -57,7 +96,7 @@ pipeline {
 
         stage('Import Database (Local)') {
             steps {
-                sh 'sudo mysql -u root -ppassword < init.sql'
+                sh 'sudo mysql -u root -ppassword < artifacts/init.sql'
             }
         }
 
@@ -78,7 +117,7 @@ pipeline {
                 sshagent(['ubuntu']) {
                     sh '''
                         ssh-keyscan -H 54.221.67.162 >> ~/.ssh/known_hosts
-                        scp index.php init.sql ubuntu@54.221.67.162:~ 
+                        scp artifacts/index.php artifacts/init.sql ubuntu@54.221.67.162:~
                         ssh ubuntu@54.221.67.162 "sudo mv ~/index.php ~/init.sql /var/www/html/"
                         ssh ubuntu@54.221.67.162 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
                         ssh ubuntu@54.221.67.162 "sudo systemctl restart apache2"
@@ -95,7 +134,7 @@ pipeline {
                 sshagent(['ubuntu']) {
                     sh '''
                         ssh-keyscan -H 34.239.133.252 >> ~/.ssh/known_hosts
-                        scp index.php init.sql ubuntu@34.239.133.252:~ 
+                        scp artifacts/index.php artifacts/init.sql ubuntu@34.239.133.252:~
                         ssh ubuntu@34.239.133.252 "sudo mv ~/index.php ~/init.sql /var/www/html/"
                         ssh ubuntu@34.239.133.252 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
                         ssh ubuntu@34.239.133.252 "sudo systemctl restart apache2"
@@ -113,7 +152,7 @@ pipeline {
             steps {
                 sh '''
                     echo "devops user exists. Importing DB..."
-                    sudo mysql -u devops -ppassword < init.sql
+                    sudo mysql -u devops -ppassword < artifacts/init.sql
                 '''
             }
         }
@@ -121,11 +160,11 @@ pipeline {
 
     post {
         success {
-            echo 'PHP CRUD App deployed successfully to staging and/or production!'
-            echo "Visit app at: http://$DEPLOYMENT_IP"
+            echo '✅ PHP CRUD App deployed successfully to staging and/or production!'
+            echo "🌐 Visit app at: http://$DEPLOYMENT_IP"
         }
         failure {
-            echo 'Deployment failed. Please check Jenkins logs for details.'
+            echo '❌ Deployment failed. Please check Jenkins logs for details.'
         }
     }
 }
