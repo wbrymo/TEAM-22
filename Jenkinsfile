@@ -6,9 +6,9 @@ pipeline {
     }
 
     environment {
-        STAGING_IP = '54.196.165.194'
-        PROD_IP = '18.208.127.21'
-        DEPLOYMENT_IP = '54.196.165.194'
+        STAGING_IP = '54.221.67.162'
+        PROD_IP = '34.239.133.252'
+        DEPLOYMENT_IP = '54.221.67.162'
     }
 
     stages {
