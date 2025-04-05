@@ -77,10 +77,10 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
-                        scp index.php init.sql ubuntu@54.196.165.194:~ 
-                        ssh ubuntu@54.196.165.194 "sudo mv ~/index.php ~/init.sql /var/www/html/"
-                        ssh ubuntu@54.196.165.194 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
-                        ssh ubuntu@54.196.165.194 "sudo systemctl restart apache2"
+                        scp index.php init.sql ubuntu@54.221.67.162:~ 
+                        ssh ubuntu@54.221.67.162 "sudo mv ~/index.php ~/init.sql /var/www/html/"
+                        ssh ubuntu@54.221.67.162 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
+                        ssh ubuntu@54.221.67.162 "sudo systemctl restart apache2"
                     '''
                 }
             }
@@ -93,11 +93,11 @@ pipeline {
             steps {
                 sshagent(['ubuntu']) {
                     sh '''
-                        ssh-keyscan -H 18.208.127.21 >> ~/.ssh/known_hosts
+                        ssh-keyscan -H 34.239.133.252 >> ~/.ssh/known_hosts
                         scp index.php init.sql ubuntu@18.208.127.21:~ 
-                        ssh ubuntu@18.208.127.21 "sudo mv ~/index.php ~/init.sql /var/www/html/"
-                        ssh ubuntu@18.208.127.21 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
-                        ssh ubuntu@18.208.127.21 "sudo systemctl restart apache2"
+                        ssh ubuntu@34.239.133.252 "sudo mv ~/index.php ~/init.sql /var/www/html/"
+                        ssh ubuntu@34.239.133.252 "sudo mysql -u root -ppassword < /var/www/html/init.sql"
+                        ssh ubuntu@34.239.133.252 "sudo systemctl restart apache2"
                     '''
                 }
             }
