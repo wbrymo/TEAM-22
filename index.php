@@ -1,6 +1,16 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Toggle environment: true for development, false for production
+$isDev = true;
+
+if ($isDev) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+} else {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
+    ini_set('error_log', '/var/log/php_crud_errors.log');
+}
 
 // DB connection using PDO
 $host = 'localhost';
@@ -9,10 +19,16 @@ $user = 'devops';
 $pass = 'password';
 
 try {
-    $conn = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
+    $dsn = "mysql:host=$host;dbname=$db";
+    $conn = new PDO($dsn, $user, $pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die('Connection failed: ' . $e->getMessage());
+    if ($isDev) {
+        die('Connection failed: ' . $e->getMessage());
+    } else {
+        error_log('DB connection failed: ' . $e->getMessage());
+        die('We are experiencing issues. Please try again later.');
+    }
 }
 
 // Handle Delete
@@ -44,7 +60,7 @@ if (isset($_GET['edit'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = $_POST['name'];
     $email = $_POST['email'];
-    
+
     if (!empty($_POST['id'])) {
         $id = intval($_POST['id']);
         $stmt = $conn->prepare("UPDATE students SET name = :name, email = :email WHERE id = :id");
@@ -58,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
