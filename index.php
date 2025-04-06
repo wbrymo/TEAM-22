@@ -1,5 +1,5 @@
 <?php
-// Toggle environment: true for development, false for production
+// Environment toggle: set to false in production
 $isDev = true;
 
 if ($isDev) {
@@ -12,16 +12,61 @@ if ($isDev) {
     ini_set('error_log', '/var/log/php_crud_errors.log');
 }
 
-// DB connection using PDO
+// Database credentials
 $host = 'localhost';
 $db = 'studentdb';
 $user = 'devops';
 $pass = 'password';
 
+// Initialize variables
+$edit_mode = false;
+$edit_id = 0;
+$edit_name = '';
+$edit_email = '';
+
 try {
     $dsn = "mysql:host=$host;dbname=$db";
     $conn = new PDO($dsn, $user, $pass);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Handle Delete
+    if (isset($_GET['delete'])) {
+        $id = intval($_GET['delete']);
+        $stmt = $conn->prepare("DELETE FROM students WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        header("Location: index.php");
+        exit;
+    }
+
+    // Handle Edit
+    if (isset($_GET['edit'])) {
+        $edit_mode = true;
+        $edit_id = intval($_GET['edit']);
+        $stmt = $conn->prepare("SELECT * FROM students WHERE id = :id");
+        $stmt->execute(['id' => $edit_id]);
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $edit_name = $row['name'];
+            $edit_email = $row['email'];
+        }
+    }
+
+    // Handle Insert/Update
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+
+        if (!empty($_POST['id'])) {
+            $id = intval($_POST['id']);
+            $stmt = $conn->prepare("UPDATE students SET name = :name, email = :email WHERE id = :id");
+            $stmt->execute(['name' => $name, 'email' => $email, 'id' => $id]);
+        } else {
+            $stmt = $conn->prepare("INSERT INTO students (name, email) VALUES (:name, :email)");
+            $stmt->execute(['name' => $name, 'email' => $email]);
+        }
+
+        header("Location: index.php");
+        exit;
+    }
 } catch (PDOException $e) {
     if ($isDev) {
         die('Connection failed: ' . $e->getMessage());
@@ -29,49 +74,6 @@ try {
         error_log('DB connection failed: ' . $e->getMessage());
         die('We are experiencing issues. Please try again later.');
     }
-}
-
-// Handle Delete
-if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM students WHERE id = :id");
-    $stmt->execute(['id' => $id]);
-    header("Location: index.php");
-    exit;
-}
-
-// Handle Edit
-$edit_mode = false;
-$edit_id = 0;
-$edit_name = '';
-$edit_email = '';
-if (isset($_GET['edit'])) {
-    $edit_mode = true;
-    $edit_id = intval($_GET['edit']);
-    $stmt = $conn->prepare("SELECT * FROM students WHERE id = :id");
-    $stmt->execute(['id' => $edit_id]);
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $edit_name = $row['name'];
-        $edit_email = $row['email'];
-    }
-}
-
-// Handle Insert/Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-
-    if (!empty($_POST['id'])) {
-        $id = intval($_POST['id']);
-        $stmt = $conn->prepare("UPDATE students SET name = :name, email = :email WHERE id = :id");
-        $stmt->execute(['name' => $name, 'email' => $email, 'id' => $id]);
-    } else {
-        $stmt = $conn->prepare("INSERT INTO students (name, email) VALUES (:name, :email)");
-        $stmt->execute(['name' => $name, 'email' => $email]);
-    }
-
-    header("Location: index.php");
-    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -112,12 +114,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1>PHP CRUD App - Almost a DevOps Engineer!</h1>
     <h2>This application was built by WALE, RUKKY & TIMI</h2>
 
-    <h3><?php echo $edit_mode ? 'Edit Student' : 'Add New Student'; ?></h3>
+    <h3><?= $edit_mode ? 'Edit Student' : 'Add New Student'; ?></h3>
     <form method="POST">
-        <input type="hidden" name="id" value="<?php echo $edit_mode ? $edit_id : ''; ?>">
-        <input type="text" name="name" placeholder="Name" required value="<?php echo htmlspecialchars($edit_name); ?>">
-        <input type="email" name="email" placeholder="Email" required value="<?php echo htmlspecialchars($edit_email); ?>">
-        <button type="submit"><?php echo $edit_mode ? 'Update' : 'Create'; ?></button>
+        <input type="hidden" name="id" value="<?= $edit_mode ? $edit_id : ''; ?>">
+        <input type="text" name="name" placeholder="Name" required value="<?= htmlspecialchars($edit_name); ?>">
+        <input type="email" name="email" placeholder="Email" required value="<?= htmlspecialchars($edit_email); ?>">
+        <button type="submit"><?= $edit_mode ? 'Update' : 'Create'; ?></button>
         <?php if ($edit_mode): ?>
             <a href="index.php">Cancel</a>
         <?php endif; ?>
