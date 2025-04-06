@@ -2,14 +2,23 @@
 // Environment toggle: set to false in production
 $isDev = true;
 
+// Hardened Logger Configuration
+$logFile = '/var/log/php_crud_errors.log';
+
 if ($isDev) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
 } else {
-    error_reporting(0);
+    error_reporting(E_ALL & ~E_NOTICE);
     ini_set('display_errors', 0);
     ini_set('log_errors', 1);
-    ini_set('error_log', '/var/log/php_crud_errors.log');
+    ini_set('error_log', $logFile);
+
+    if (!file_exists($logFile)) {
+        touch($logFile);
+        chmod($logFile, 0640); // Owner read/write, group read
+        chown($logFile, 'www-data'); // Or 'apache' for CentOS
+    }
 }
 
 // Database credentials
@@ -117,8 +126,8 @@ try {
     <h3><?= $edit_mode ? 'Edit Student' : 'Add New Student'; ?></h3>
     <form method="POST">
         <input type="hidden" name="id" value="<?= $edit_mode ? $edit_id : ''; ?>">
-        <input type="text" name="name" placeholder="Name" required value="<?= htmlspecialchars($edit_name); ?>">
-        <input type="email" name="email" placeholder="Email" required value="<?= htmlspecialchars($edit_email); ?>">
+        <input type="text" name="name" placeholder="Name" required value="<?= htmlspecialchars($edit_name ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+        <input type="email" name="email" placeholder="Email" required value="<?= htmlspecialchars($edit_email ?? '', ENT_QUOTES, 'UTF-8'); ?>">
         <button type="submit"><?= $edit_mode ? 'Update' : 'Create'; ?></button>
         <?php if ($edit_mode): ?>
             <a href="index.php">Cancel</a>
@@ -133,8 +142,8 @@ try {
         $stmt = $conn->query("SELECT * FROM students");
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $id = $row['id'];
-            $name = htmlspecialchars($row['name']);
-            $email = htmlspecialchars($row['email']);
+            $name = htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8');
+            $email = htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8');
             echo "<tr>
                     <td>$id</td>
                     <td>$name</td>
