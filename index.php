@@ -1,61 +1,35 @@
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// DB connection
-$host = 'localhost';
-$user = 'devops';
-$pass = 'password';
-$db = 'studentdb';
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die('Connection failed: ' . $conn->connect_error);
-}
-
-// Handle Delete
-if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    $conn->query("DELETE FROM students WHERE id=$id");
-    header("Location: index.php");
-    exit;
-}
-
-// Handle Edit
-$edit_mode = false;
-$edit_id = 0;
-$edit_name = '';
-$edit_email = '';
-if (isset($_GET['edit'])) {
-    $edit_mode = true;
-    $edit_id = intval($_GET['edit']);
-    $result = $conn->query("SELECT * FROM students WHERE id=$edit_id");
-    if ($result && $result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $edit_name = $row['name'];
-        $edit_email = $row['email'];
-    }
-}
-
-// Handle Insert/Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $conn->real_escape_string($_POST['name']);
-    $email = $conn->real_escape_string($_POST['email']);
-    if (!empty($_POST['id'])) {
-        $id = intval($_POST['id']);
-        $conn->query("UPDATE students SET name='$name', email='$email' WHERE id=$id");
-    } else {
-        $conn->query("INSERT INTO students (name, email) VALUES ('$name', '$email')");
-    }
-    header("Location: index.php");
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>PHP CRUD App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        caption {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 6px;
+        }
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+    </style>
 </head>
 <body>
     <h1>TEAM 22 🤝</h1>
@@ -74,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <h3>Student List</h3>
-    <table border="1">
+    <table>
         <caption>List of all registered students</caption>
         <tr><th>ID</th><th>Name</th><th>Email</th><th>Actions</th></tr>
         <?php
