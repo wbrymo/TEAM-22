@@ -57,8 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>PHP CRUD App</title>
 </head>
 <body>
@@ -78,24 +79,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <h3>Student List</h3>
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>ID</th><th>Name</th><th>Email</th><th>Actions</th>
-        </tr>
-        <?php
-        $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
-        while ($row = $result->fetch_assoc()):
-        ?>
+    <table border="1">
+        <caption>List of registered students with their email and edit/delete options</caption>
+        <thead>
             <tr>
-                <td><?php echo $row['id']; ?></td>
-                <td><?php echo htmlspecialchars($row['name']); ?></td>
-                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                <td>
-                    <a href="?edit=<?php echo $row['id']; ?>">Edit</a> |
-                    <a href="?delete=<?php echo $row['id']; ?>" onclick="return confirm('Are you sure?')">Delete</a>
-                </td>
+                <th>ID</th><th>Name</th><th>Email</th><th>Actions</th>
             </tr>
-        <?php endwhile; ?>
+        </thead>
+        <tbody>
+            <?php
+            $result = $conn->query("SELECT * FROM students ORDER BY id DESC");
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <td>{$row['id']}</td>
+                        <td>" . htmlspecialchars($row['name']) . "</td>
+                        <td>" . htmlspecialchars($row['email']) . "</td>
+                        <td>
+                            <a href='?edit={$row['id']}'>Edit</a> |
+                            <a href='?delete={$row['id']}' onclick=\"return confirm('Are you sure?')\">Delete</a>
+                        </td>
+                    </tr>";
+            }
+            ?>
+        </tbody>
     </table>
 </body>
 </html>
