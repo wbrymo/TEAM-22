@@ -1,0 +1,24 @@
+- name: Deploy PHP Application
+  hosts: webserver
+  become: yes
+
+  tasks:
+    - name: Install Apache and PHP
+      package:
+        name:
+          - httpd
+          - php
+          - php-mysqlnd
+        state: present
+
+    - name: Start and enable Apache
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Copy PHP file to server
+      copy:
+        src: ./index.php
+        dest: /var/www/html/index.php
+        mode: '0644'
