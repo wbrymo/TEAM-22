@@ -1,6 +1,5 @@
 
 # Created by https://www.gitignore.io/api/java,macos,eclipse,java-web
-
 ### Eclipse ###
 
 .metadata
